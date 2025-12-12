@@ -368,19 +368,3 @@
 [2025-12-12 18:10:57] [DEBUG   ] discord.client: Dispatching event socket_event_type
 [2025-12-12 18:10:57] [DEBUG   ] discord.client: Dispatching event guild_available
 [2025-12-12 18:10:59] [DEBUG   ] discord.client: Dispatching event ready
-[2025-12-12 18:11:33] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:11:33] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:12:14] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:12:14] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:12:55] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:12:55] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:13:36] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:13:36] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:14:18] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:14:18] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:14:59] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:14:59] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:15:40] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:15:40] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
-[2025-12-12 18:16:21] [DEBUG   ] discord.gateway: Keeping shard ID None websocket alive with sequence 3.
-[2025-12-12 18:16:22] [DEBUG   ] discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
