@@ -10,10 +10,16 @@ class Valorant(commands.Cog):
         self.client = HenrikClient()
 
     @commands.command(name="rank")
-    async def rank(self, ctx: commands.Context, name: str, tag: str, region: str = "eu"):
-        """!rank <name> <tag> [region]  e.g. !rank wad2k jbc eu"""
-        status, data = await self.client.get_mmr(region, name, tag)
+    async def rank(self, ctx: commands.Context, riot_id: str, region: str = "eu"):
+        """!rank <name>#<tag> [region]  e.g. !rank wad2k#jbc"""
+        if "#" not in riot_id:
+            await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
+            return
 
+        name, tag = riot_id.split("#", 1)
+
+        status, data = await self.client.get_mmr(region, name, tag)
+    
         if status != 200:
             await ctx.send(f"Couldn't fetch rank for `{name}#{tag}` (status {status}).")
             return
