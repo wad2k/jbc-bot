@@ -14,8 +14,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 INITIAL_EXTENSIONS = [
     "cogs.valorant",
+    "cogs.football",
 ]
-
 
 @bot.event
 async def on_ready():
