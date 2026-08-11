@@ -4,6 +4,7 @@ import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from easterEggs import RESPONSES
 
 load_dotenv()
 
@@ -27,17 +28,12 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.content.strip().lower() == "jbc bot":
-        await message.channel.send("hi")
-
-    if message.content.strip().lower() == "ano":
-        await message.channel.send("hello ano")
-
-    if message.content.strip().lower() == "vookum":
-            await message.channel.send("AI LONDON OPEN THAT SHIT UP")
+    content = message.content.strip().lower()
+    reply = RESPONSES.get(content)
+    if reply:
+        await message.channel.send(reply)
 
     await bot.process_commands(message)
-
 
 async def main():
     async with bot:
