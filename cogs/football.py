@@ -43,7 +43,7 @@ class Football(commands.Cog):
 
         embed = discord.Embed(
             title=f"{home} vs {away}",
-            description=f"**Competition:** {competition}\n**Kickoff (UTC):** {kickoff}",
+            description=f"**Competition:** {competition}\n**Kickoff:** {kickoff}",
             color=discord.Color.blue(),
         )
 
