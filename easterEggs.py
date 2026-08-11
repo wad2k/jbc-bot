@@ -4,5 +4,7 @@ RESPONSES = {
     "vookum": "AI LONDON OPEN THAT SHIT UP",
     "joe": "joepip",
     "jawad": "life is code",
-    "junebug": "junebug cult"
+    "junebug": "cult leader",
+    "junebug cult": "junebug cult",
+    "choski": ":3"
 }
