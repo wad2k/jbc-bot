@@ -29,3 +29,6 @@ class HenrikClient:
 
     async def get_match_history(self, region: str, name: str, tag: str):
         return await self._get(f"/valorant/v3/matches/{region}/{name}/{tag}")
+
+    async def get_mmr_history(self, region: str, name: str, tag: str):
+        return await self._get(f"/valorant/v2/mmr-history/{region}/{name}/{tag}")

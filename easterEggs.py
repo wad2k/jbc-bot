@@ -6,5 +6,6 @@ RESPONSES = {
     "jawad": "life is code",
     "junebug": "cult leader",
     "junebug cult": "junebug cult",
-    "choski": ":3"
+    "choski": ":3",
+    "get this man a true": ":true:"
 }
