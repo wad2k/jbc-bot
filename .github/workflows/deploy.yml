@@ -11,7 +11,7 @@ jobs:
       - name: Pull latest code
         run: |
           cd /opt/discord-bot
-          git pull origin main
+          git pull origin master
 
       - name: Restart bot service
         run: sudo systemctl restart discord-bot
