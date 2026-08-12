@@ -59,7 +59,7 @@ class Valorant(commands.Cog):
             await ctx.send("No match history found.")
             return
 
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=14)
         todays_games = []
         for game in history:
             game_date_str = game.get("date")

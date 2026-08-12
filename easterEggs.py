@@ -7,5 +7,8 @@ RESPONSES = {
     "junebug": "cult leader",
     "junebug cult": "junebug cult",
     "choski": ":3",
-    "get this man a true": ":true:"
+    "cam": "Milsom Mode",
+    "milsom": "Milsom Mode",
+    "get this man a true": "<:true:1496210614195060927>",
+    "mints":"<:robloxemoji:1315835149476171776>"
 }
