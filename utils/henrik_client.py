@@ -14,11 +14,14 @@ class HenrikClient:
     def _headers(self):
         return {"Authorization": self.api_key} if self.api_key else {}
 
-    async def _get(self, path: str):
+    async def _get(self, path: str, params: dict | None = None):
         url = f"{BASE_URL}{path}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=self._headers()) as resp:
-                data = await resp.json()
+            async with session.get(url, headers=self._headers(), params=params) as resp:
+                if "application/json" in resp.headers.get("Content-Type", ""):
+                    data = await resp.json()
+                else:
+                    data = await resp.read()
                 return resp.status, data
 
     async def get_account(self, name: str, tag: str):
@@ -32,3 +35,6 @@ class HenrikClient:
 
     async def get_mmr_history(self, region: str, name: str, tag: str, platform: str = "pc"):
         return await self._get(f"/valorant/v2/mmr-history/{region}/{platform}/{name}/{tag}")
+
+    async def get_crosshair(self, code: str):
+        return await self._get(f"/valorant/v1/crosshair/generate", params={"id": code})

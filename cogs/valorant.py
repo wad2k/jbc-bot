@@ -1,4 +1,5 @@
 import discord
+import io
 from discord.ext import commands
 from datetime import datetime, timedelta, timezone
 from utils.henrik_client import HenrikClient
@@ -85,6 +86,25 @@ class Valorant(commands.Cog):
         )
 
         await ctx.send(embed=embed)
+
+    @commands.command(name="crosshair")
+    async def crosshair(self, ctx: commands.Context, *, code: str):
+        """!crosshair <code> e.g. !crosshair 0;P;h;0;0l;5;0v;3;0g;1;0o;2;0a;1;0f;0;1b;0"""
+        try:
+            status, data = await self.client.get_crosshair(code)
+        except Exception as e:
+            await ctx.send(f"Error fetching crosshair: {e}")
+            raise
+
+        if status != 200:
+            await ctx.send(f"Couldn't fetch crosshair` (status {status}).")
+            return
+
+        file = discord.File(io.BytesIO(data), filename="crosshair.png")
+        embed = discord.Embed(title="Crosshair Preview")
+        embed.set_image(url="attachment://crosshair.png")
+        await ctx.send(embed=embed, file=file)
+
 
 
 
