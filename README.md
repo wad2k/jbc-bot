@@ -1,8 +1,8 @@
 # JBC Discord Bot
 
-A Discord bot with Valorant and football (Chelsea FC) integrations, built with `discord.py`.
+a discord bot (WIP) with valorant and football (currently only chelsea) integrations, built with `discord.py`.
 
-## Setup
+## Dev Setup
 
 ### 1. Clone and install dependencies
 
