@@ -1,26 +1,50 @@
 import discord
 import io
+from typing import Optional
 from discord.ext import commands
 from datetime import datetime, timedelta, timezone
 from utils.henrik_client import HenrikClient
+from utils.account_store import AccountStore
 
 
 class Valorant(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.client = HenrikClient()
+        self.accounts = AccountStore()
+
+    async def resolve_riot_id(self, ctx: commands.Context, riot_id: Optional[str], region: str):
+        """
+        Returns (name, tag, region) or (None, None, None) if it couldn't be resolved
+        (and already sent an error message to the user).
+        """
+        if riot_id:
+            if "#" not in riot_id:
+                await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
+                return None, None, None
+            name, tag = riot_id.split("#", 1)
+            return name, tag, region
+
+        # No riot_id passed — fall back to the user's saved account
+        account = await self.accounts.get_account(ctx.author.id)
+        if not account:
+            await ctx.send(
+                "You haven't set an account yet. Use `!setaccount name#tag` first, "
+                "or pass one directly, e.g. `!rank wad2k#jbc`."
+            )
+            return None, None, None
+
+        return account["name"], account["tag"], account.get("region", region)
 
     @commands.command(name="rank")
-    async def rank(self, ctx: commands.Context, riot_id: str, region: str = "eu"):
-        """!rank <name>#<tag> [region]  e.g. !rank wad2k#jbc"""
-        if "#" not in riot_id:
-            await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
+    async def rank(self, ctx: commands.Context, riot_id: Optional[str] = None, region: str = "eu"):
+        """!rank [name#tag] [region]  e.g. !rank wad2k#jbc  |  or just !rank if you've set an account"""
+        name, tag, region = await self.resolve_riot_id(ctx, riot_id, region)
+        if name is None:
             return
 
-        name, tag = riot_id.split("#", 1)
-
         status, data = await self.client.get_mmr(region, name, tag)
-    
+
         if status != 200:
             await ctx.send(f"Couldn't fetch rank for `{name}#{tag}` (status {status}).")
             return
@@ -41,16 +65,14 @@ class Valorant(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="todayrr")
-    async def todayrr(self, ctx: commands.Context, riot_id: str, region: str = "eu"):
-        """!todayrr <name>#<tag> [region]  e.g. !todayrr wad2k#jbc"""
-        if "#" not in riot_id:
-            await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
+    async def todayrr(self, ctx: commands.Context, riot_id: Optional[str] = None, region: str = "eu"):
+        """!todayrr [name#tag] [region]  e.g. !todayrr wad2k#jbc  |  or just !todayrr if you've set an account"""
+        name, tag, region = await self.resolve_riot_id(ctx, riot_id, region)
+        if name is None:
             return
 
-        name, tag = riot_id.split("#", 1)
-
         status, data = await self.client.get_mmr_history(region, name, tag)
-    
+
         if status != 200:
             await ctx.send(f"Couldn't fetch RR history for `{name}#{tag}` (status {status}).")
             return
@@ -105,8 +127,44 @@ class Valorant(commands.Cog):
         embed.set_image(url="attachment://crosshair.png")
         await ctx.send(embed=embed, file=file)
 
+    @commands.command(name="setaccount")
+    async def setaccount(self, ctx: commands.Context, riot_id: str, region: str = "eu"):
+        """!setaccount <name>#<tag> [region]  e.g. !setaccount wad2k#jbc"""
+        if "#" not in riot_id:
+            await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
+            return
 
+        name, tag = riot_id.split("#", 1)
 
+        # Optional: validate the account actually exists before saving it
+        status, _ = await self.client.get_mmr(region, name, tag)
+        if status != 200:
+            await ctx.send(
+                f"Couldn't verify `{name}#{tag}` in region `{region}` (status {status}). "
+                "Account not saved — double check the name/tag/region."
+            )
+            return
+
+        await self.accounts.set_account(ctx.author.id, name, tag, region)
+        await ctx.send(f"✅ Account set to `{name}#{tag}` ({region}). Future commands will use this by default.")
+
+    @commands.command(name="myaccount")
+    async def myaccount(self, ctx: commands.Context):
+        """!myaccount  — shows the account you've saved"""
+        account = await self.accounts.get_account(ctx.author.id)
+        if not account:
+            await ctx.send("You haven't set an account yet. Use `!setaccount name#tag`.")
+            return
+        await ctx.send(f"Your saved account: `{account['name']}#{account['tag']}` ({account.get('region', 'eu')})")
+
+    @commands.command(name="clearaccount")
+    async def clearaccount(self, ctx: commands.Context):
+        """!clearaccount  — removes your saved account"""
+        removed = await self.accounts.clear_account(ctx.author.id)
+        if removed:
+            await ctx.send("Your saved account has been removed.")
+        else:
+            await ctx.send("You don't have an account set.")
 
 
 async def setup(bot: commands.Bot):
