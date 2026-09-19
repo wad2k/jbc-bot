@@ -109,6 +109,127 @@ class Valorant(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command(name="recentgames")
+    async def recentgames(
+        self,
+        ctx: commands.Context,
+        riot_id: Optional[str] = None,
+        region: str = "eu",
+        count: int = 5,
+    ):
+        """!recentgames [name#tag] [region] [count]  e.g. !recentgames wad2k#jbc eu 8  |  or just !recentgames"""
+        name, tag, region = await self.resolve_riot_id(ctx, riot_id, region)
+        if name is None:
+            return
+
+        count = max(1, min(count, 10))  # keep it between 1 and 10
+
+        # Change mode="competitive" to None to include every queue (unrated, deathmatch, etc.)
+        status, data = await self.client.get_match_history(
+            region, name, tag, mode="competitive", size=count
+        )
+        if status != 200:
+            await ctx.send(f"Couldn't fetch recent games for `{name}#{tag}` (status {status}).")
+            return
+
+        matches = data.get("data", [])
+        if not matches:
+            await ctx.send(f"No recent competitive games found for `{name}#{tag}`.")
+            return
+
+        # RR changes live in a different endpoint, so grab them and match on match id.
+        # If this call fails we just skip the RR part.
+        rr_by_match = {}
+        mmr_status, mmr_data = await self.client.get_mmr_history(region, name, tag)
+        if mmr_status == 200:
+            for g in mmr_data.get("data", {}).get("history", []):
+                if g.get("match_id"):
+                    rr_by_match[g["match_id"]] = g.get("last_change", 0)
+
+        lines = []
+        wins = losses = 0
+        total_k = total_d = total_a = 0
+        net_rr = 0
+        have_rr = False
+
+        for match in matches:
+            meta = match.get("metadata", {})
+            players = match.get("players", {}).get("all_players", [])
+
+            me = next(
+                (
+                    p for p in players
+                    if p.get("name", "").lower() == name.lower()
+                    and p.get("tag", "").lower() == tag.lower()
+                ),
+                None,
+            )
+            if me is None:
+                continue
+
+            stats = me.get("stats", {})
+            kills = stats.get("kills", 0)
+            deaths = stats.get("deaths", 0)
+            assists = stats.get("assists", 0)
+            total_k += kills
+            total_d += deaths
+            total_a += assists
+            kda = (kills + assists) / max(deaths, 1)
+
+            team = me.get("team", "").lower()
+            team_info = match.get("teams", {}).get(team, {})
+            rounds_won = team_info.get("rounds_won", 0)
+            rounds_lost = team_info.get("rounds_lost", 0)
+
+            if team_info.get("has_won"):
+                emoji = "🟢"
+                wins += 1
+            elif rounds_won == rounds_lost:
+                emoji = "⬜"  # draw
+            else:
+                emoji = "🔴"
+                losses += 1
+
+            map_name = meta.get("map", "Unknown")
+            agent = me.get("character", "Unknown")
+            line = (
+                f"{emoji} **{map_name}** — {agent} • "
+                f"**{kills}/{deaths}/{assists}** ({kda:.2f} KDA) • "
+                f"{rounds_won}-{rounds_lost}"
+            )
+
+            change = rr_by_match.get(meta.get("matchid"))
+            if change is not None:
+                have_rr = True
+                net_rr += change
+                sign = "+" if change > 0 else ""
+                line += f" • {sign}{change} RR"
+
+            start = meta.get("game_start")
+            if start:
+                line += f" • <t:{int(start)}:R>"
+
+            lines.append(line)
+
+        if not lines:
+            await ctx.send(f"Couldn't find `{name}#{tag}` in the returned matches.")
+            return
+
+        kd = total_k / max(total_d, 1)
+        footer = f"{wins}W {losses}L • {kd:.2f} K/D"
+        if have_rr:
+            net_sign = "+" if net_rr >= 0 else ""
+            footer += f" • Net {net_sign}{net_rr} RR"
+
+        embed = discord.Embed(
+            title=f"{name}#{tag} — Last {len(lines)} Games",
+            description="\n".join(lines),
+            color=discord.Color.green() if wins >= losses else discord.Color.red(),
+        )
+        embed.set_footer(text=footer)
+
+        await ctx.send(embed=embed)
+
     @commands.command(name="crosshair")
     async def crosshair(self, ctx: commands.Context, *, code: str):
         """!crosshair <code> e.g. !crosshair 0;P;h;0;0l;5;0v;3;0g;1;0o;2;0a;1;0f;0;1b;0"""
