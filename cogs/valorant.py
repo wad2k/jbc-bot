@@ -1,5 +1,6 @@
 import discord
 import io
+import re
 from typing import Optional
 from discord.ext import commands
 from datetime import datetime, timedelta, timezone
@@ -17,7 +18,24 @@ class Valorant(commands.Cog):
         """
         Returns (name, tag, region) or (None, None, None) if it couldn't be resolved
         (and already sent an error message to the user).
+
+        riot_id can be "name#tag", a Discord @mention (uses that user's saved account),
+        or None (uses the command author's saved account).
         """
+        # @mention -> look up that user's saved account
+        mention = re.fullmatch(r"<@!?(\d+)>", riot_id) if riot_id else None
+        if mention:
+            user_id = int(mention.group(1))
+            target = next((m for m in ctx.message.mentions if m.id == user_id), None)
+            who = target.display_name if target else "That user"
+            account = await self.accounts.get_account(user_id)
+            if not account:
+                await ctx.send(
+                    f"{who} hasn't set an account yet. They can use `!setaccount name#tag`."
+                )
+                return None, None, None
+            return account["name"], account["tag"], account.get("region", region)
+
         if riot_id:
             if "#" not in riot_id:
                 await ctx.send("Please use the format `name#tag`, e.g. `wad2k#jbc`.")
@@ -174,7 +192,7 @@ class Valorant(commands.Cog):
             total_k += kills
             total_d += deaths
             total_a += assists
-            kda = (kills + assists) / max(deaths, 1)
+            game_kd = kills / max(deaths, 1)
 
             team = me.get("team", "").lower()
             team_info = match.get("teams", {}).get(team, {})
@@ -194,7 +212,7 @@ class Valorant(commands.Cog):
             agent = me.get("character", "Unknown")
             line = (
                 f"{emoji} **{map_name}** — {agent} • "
-                f"**{kills}/{deaths}/{assists}** ({kda:.2f} KDA) • "
+                f"**{kills}/{deaths}/{assists}** ({game_kd:.2f} K/D) • "
                 f"{rounds_won}-{rounds_lost}"
             )
 
